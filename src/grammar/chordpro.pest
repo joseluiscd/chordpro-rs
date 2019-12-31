@@ -1,0 +1,54 @@
+WHITESPACE = _{ " " | "\t" }
+COMMENT = { "#" ~ (!(NEWLINE) ~ ANY)* ~ NEWLINE }
+
+// Block start and end
+start_chord = _{ "[" }
+end_chord = _{ "]" }
+start_directive = _{ "{" }
+end_directive = _{ "}" }
+
+// Chords
+chord_block = _{ start_chord ~ chord ~ end_chord }
+note_s = {"A" | "B" | "C" | "D" | "E" | "F" | "G"}
+sharp = { "#" }
+flat = { "b" }
+note = { note_s ~ (sharp | flat)* }
+minor = {"min" | "m"}
+major = {"maj" | "M"}
+symbol = {"maj" | "min" | "aug" | "dim" | "sus" | "add" }
+bass = { note }
+number = { ASCII_DIGIT }
+chord = ${ (!(end_chord | NEWLINE) ~ (note ~ (major|minor)? ~ symbol? ~ number? ~ ("/" ~ bass)?))* }
+
+//Lines
+linec = _{ !(start_directive) ~ (text|chord_block)+ } // Line without NEWLINE
+line = @{ linec ~ NEWLINE? } //Line with NEWLINE
+paragraph = { line+ ~ NEWLINE* }
+
+
+// Directives
+args = { (!(end_directive | NEWLINE) ~ ANY)+ }
+args_chords = @{ linec }
+directive_args = _{ ":" ~ args }
+directive_args_chords = _{ ":" ~ args_chords }
+
+start_chorus = _{ start_directive ~ ("start_of_chorus"|"soc") ~ directive_args? ~ end_directive ~ NEWLINE? }
+end_chorus = _{ start_directive ~ ("end_of_chorus"|"eoc") ~ end_directive ~ NEWLINE? }
+
+title = { start_directive ~ ("title"|"t") ~ directive_args ~ end_directive ~ NEWLINE? }
+artist = { start_directive ~ "artist" ~ directive_args ~ end_directive ~ NEWLINE? }
+capo = { start_directive ~ "capo" ~ directive_args ~ end_directive ~ NEWLINE? }
+
+comment = { start_directive ~ ("comment"|"c") ~ directive_args_chords ~ end_directive ~ NEWLINE? }
+
+meta = { title | artist | capo }
+
+// Lyrics
+text = ${ (!(start_chord | end_chord | start_directive | end_directive | NEWLINE) ~ ANY)+ }
+
+
+// Chorus
+chorus = {start_chorus ~ (paragraph | NEWLINE)* ~ end_chorus }
+
+section = { chorus | comment | paragraph }
+chordpro = { SOI ~ (meta | section | NEWLINE)* ~ EOI }
