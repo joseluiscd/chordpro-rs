@@ -27,6 +27,7 @@ pub struct Paragraph(pub Vec<Line>);
 #[derive(Serialize, Debug, PartialEq, Clone)]
 #[serde(tag = "class", content = "content")]
 #[serde(rename_all = "camelCase")]
+#[non_exhaustive]
 pub enum Section {
     /// The chorus
     Chorus(Paragraph),
