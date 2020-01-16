@@ -84,17 +84,6 @@ impl FromStr for Note {
     }
 }
 
-impl SongParser {
-    fn parse_str<'a, T>(s: &'a str) -> Result<T, pest::error::Error<Rule>>
-        where T: HasRule + FromPair<'a>
-    {
-        let content = SongParser::parse(T::MATCH_RULE, s)?;
-
-        let pair = content.peek().unwrap();
-        Ok(T::from_pair(pair))
-    }
-}
-
 impl HasRule for Note {
     const MATCH_RULE: Rule = Rule::note;
 }
@@ -278,6 +267,17 @@ mod tests {
         }};
     }
 
+    impl SongParser {
+        fn parse_str<'a, T>(s: &'a str) -> Result<T, pest::error::Error<Rule>>
+            where T: HasRule + FromPair<'a>
+        {
+            let content = SongParser::parse(T::MATCH_RULE, s)?;
+
+            let pair = content.peek().unwrap();
+            Ok(T::from_pair(pair))
+        }
+    }
+    
     #[test]
     fn test_line_parse(){
         parse_test!(Line {
