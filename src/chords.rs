@@ -147,7 +147,13 @@ impl std::fmt::Display for Chord {
             write!(f, "m")?;
         }
 
-        write!(f, "{}", self.others)
+        write!(f, "{}", self.others)?;
+
+        if self.number != 0 {
+            write!(f, "{}", self.number)?;
+        }
+
+        Ok(())
     }
 }
 
@@ -163,6 +169,12 @@ impl std::fmt::Binary for Chord {
             write!(f, "m")?;
         }
 
-        write!(f, "{}", self.others)
+        write!(f, "{}", self.others)?;
+
+        if self.number != 0 {
+            write!(f, "{}", self.number)?;
+        }
+
+        Ok(())
     }
 }
