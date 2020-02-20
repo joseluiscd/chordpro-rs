@@ -42,6 +42,7 @@ pub enum Section {
 
 /// A song with its chords
 #[derive(Serialize, Debug, Default, PartialEq, Clone)]
+#[non_exhaustive]
 pub struct Song {
     pub title: String,
     pub artist: String,
