@@ -1,22 +1,29 @@
+use num_traits::{FromPrimitive, ToPrimitive};
 use serde::Serialize;
-use num_traits::{
-    FromPrimitive,
-    ToPrimitive
-};
-
 
 #[derive(Copy, Serialize, Debug, PartialEq, Clone, FromPrimitive, ToPrimitive)]
 pub enum Note {
-    A, ASharp, B, C, CSharp, D, DSharp, E, F, FSharp, G, GSharp
+    A,
+    ASharp,
+    B,
+    C,
+    CSharp,
+    D,
+    DSharp,
+    E,
+    F,
+    FSharp,
+    G,
+    GSharp,
 }
 
 #[derive(Serialize, Debug, Default, PartialEq, Clone)]
-pub struct Chord{
+pub struct Chord {
     pub root: Note,
     pub minor: bool,
     pub others: String,
     pub number: u8,
-    pub bass: Note
+    pub bass: Note,
 }
 
 impl Chord {
@@ -26,7 +33,7 @@ impl Chord {
             minor: false,
             others: String::new(),
             number: 0,
-            bass: n
+            bass: n,
         }
     }
 
@@ -36,7 +43,7 @@ impl Chord {
             minor: true,
             others: String::new(),
             number: 0,
-            bass: n
+            bass: n,
         }
     }
 }
@@ -57,7 +64,7 @@ impl std::ops::Sub<i8> for Note {
     }
 }
 
-impl Default for Note{
+impl Default for Note {
     fn default() -> Self {
         Note::A
     }
