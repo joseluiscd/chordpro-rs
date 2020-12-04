@@ -2,6 +2,8 @@
 
 [![Latest Version](https://img.shields.io/crates/v/chordpro.svg)](https://crates.io/crates/chordpro)
 [![Documentation](https://docs.rs/chordpro/badge.svg)](https://docs.rs/chordpro)
+![Rust](https://github.com/joseluiscd/chordpro-rs/workflows/Rust/badge.svg)
+[![codecov](https://codecov.io/gh/joseluiscd/chordpro-rs/branch/master/graph/badge.svg?token=28PREBF5R8)](https://codecov.io/gh/joseluiscd/chordpro-rs)
 
 Chordpro file parser written in Rust. Chordpro is a simple text format for
 the notation of lyrics with chords. Although initially intended for

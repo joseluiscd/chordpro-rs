@@ -38,6 +38,7 @@ pub mod song;
 pub mod iterators;
 pub mod songparse;
 pub mod transpose;
+pub mod format;
 
 pub use {
     chords::{
@@ -55,4 +56,7 @@ pub use {
         SectionIterator,
         SectionMutIterator,
     },
+    format::{
+        latin, Latin
+    }
 };
