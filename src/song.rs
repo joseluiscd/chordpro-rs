@@ -1,17 +1,17 @@
 //! Contains `Song` struct and its components.
-//! 
-use serde::Serialize;
+//!
 use crate::chords::Chord;
-
+use serde::Serialize;
 
 /// Chunk of lyrics or a chord
 #[derive(Serialize, Debug, PartialEq, Clone)]
-#[serde(tag = "class", content="content")]
+#[serde(tag = "class", content = "content")]
+#[non_exhaustive]
 pub enum Chunk {
     /// Some lyrics
     Lyrics(String),
     /// A chord represented by a &str
-    Chord(Chord)
+    Chord(Chord),
 }
 
 /// Lyrics with chords
@@ -21,7 +21,6 @@ pub struct Line(pub Vec<Chunk>);
 /// A verse/chorus in the song
 #[derive(Serialize, Debug, Default, PartialEq, Clone)]
 pub struct Paragraph(pub Vec<Line>);
-
 
 /// A song section (chorus, verse or a comment)
 #[derive(Serialize, Debug, PartialEq, Clone)]

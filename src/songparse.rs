@@ -3,48 +3,35 @@ use pest::iterators::{Pair, Pairs};
 use pest::Parser;
 use std::str::FromStr;
 
-use crate::song::{
-    Chunk,
-    Line,
-    Paragraph,
-    Section,
-    Song
-};
+use crate::song::{Chunk, Line, Paragraph, Section, Song};
 
-use crate::chords::{
-    Chord,
-    Note
-};
+use crate::chords::{Chord, Note};
 
 #[derive(Parser)]
 #[grammar = "grammar/chordpro.pest"]
 pub struct SongParser;
 
-trait HasRule
-{
+trait HasRule {
     const MATCH_RULE: Rule;
 }
 
-trait ProcessChild<'a>
-{
+trait ProcessChild<'a> {
     //Match and call from_pair
     fn process_child<'m>(&'m mut self, pair: Pair<'a, Rule>);
 }
 
-trait FromPair<'a>
-    : HasRule + Sized
-{
+trait FromPair<'a>: HasRule + Sized {
     fn from_pair(content: Pair<'a, Rule>) -> Self;
 }
 
-impl <'a, T> FromPair<'a> for T
-    where
-        T: Default + ProcessChild<'a> + HasRule
+impl<'a, T> FromPair<'a> for T
+where
+    T: Default + ProcessChild<'a> + HasRule,
 {
     fn from_pair(content: Pair<'a, Rule>) -> Self {
         let mut d = Self::default();
-        
-        for input in content.into_inner(){
+
+        for input in content.into_inner() {
             d.process_child(input);
         }
 
@@ -52,8 +39,7 @@ impl <'a, T> FromPair<'a> for T
     }
 }
 
-impl FromStr for Song
-{
+impl FromStr for Song {
     type Err = pest::error::Error<Rule>;
     fn from_str(s: &str) -> Result<Song, Self::Err> {
         let content = SongParser::parse(Song::MATCH_RULE, s)?;
@@ -63,8 +49,7 @@ impl FromStr for Song
     }
 }
 
-impl FromStr for Chord
-{
+impl FromStr for Chord {
     type Err = pest::error::Error<Rule>;
     fn from_str(s: &str) -> Result<Chord, Self::Err> {
         let content = SongParser::parse(Chord::MATCH_RULE, s)?;
@@ -75,7 +60,7 @@ impl FromStr for Chord
 }
 
 impl FromStr for Note {
-   type Err = pest::error::Error<Rule>;
+    type Err = pest::error::Error<Rule>;
     fn from_str(s: &str) -> Result<Note, Self::Err> {
         let content = SongParser::parse(Note::MATCH_RULE, s)?;
 
@@ -88,11 +73,11 @@ impl HasRule for Note {
     const MATCH_RULE: Rule = Rule::note;
 }
 
-impl <'a> ProcessChild<'a> for Note {
-    fn process_child(&mut self, pair: Pair<'a, Rule>){
-        match pair.as_rule(){
+impl<'a> ProcessChild<'a> for Note {
+    fn process_child(&mut self, pair: Pair<'a, Rule>) {
+        match pair.as_rule() {
             Rule::note_s => {
-                let k: Option<char> = pair.as_str().chars().nth(0).map(|c|{ c.to_ascii_uppercase() });
+                let k: Option<char> = pair.as_str().chars().nth(0).map(|c| c.to_ascii_uppercase());
 
                 match k {
                     Some('A') => *self = Note::A,
@@ -102,16 +87,16 @@ impl <'a> ProcessChild<'a> for Note {
                     Some('E') => *self = Note::E,
                     Some('F') => *self = Note::F,
                     Some('G') => *self = Note::G,
-                    _ => {},
+                    _ => {}
                 }
-            },
+            }
 
             Rule::sharp => {
                 *self = *self + 1;
-            },
+            }
             Rule::flat => {
                 *self = *self - 1;
-            },
+            }
             _ => {}
         }
     }
@@ -121,40 +106,40 @@ impl HasRule for Chord {
     const MATCH_RULE: Rule = Rule::chord;
 }
 
-impl <'a> ProcessChild<'a> for Chord{
-    fn process_child(&mut self, pair: Pair<'a, Rule>){
+impl<'a> ProcessChild<'a> for Chord {
+    fn process_child(&mut self, pair: Pair<'a, Rule>) {
         match pair.as_rule() {
             Rule::note => {
                 let note = Note::from_pair(pair);
                 self.root = note;
                 self.bass = note;
-            },
+            }
             Rule::major => {
                 self.minor = false;
-            },
+            }
             Rule::minor => {
                 self.minor = true;
-            },
+            }
             Rule::symbol => {
                 self.others = pair.as_str().to_owned();
-            },
+            }
             Rule::number => {
                 self.number = u8::from_str(pair.as_str()).unwrap();
-            },
+            }
             Rule::bass => {
                 self.bass = Note::from_pair(pair.into_inner().peek().unwrap());
-            },
+            }
             _ => {}
         }
     }
 }
 
-impl HasRule for Line{
+impl HasRule for Line {
     const MATCH_RULE: Rule = Rule::line;
 }
 
-impl <'a> ProcessChild<'a> for Line{
-    fn process_child(&mut self, pair: Pair<'a, Rule>){
+impl<'a> ProcessChild<'a> for Line {
+    fn process_child(&mut self, pair: Pair<'a, Rule>) {
         match pair.as_rule() {
             Rule::chord => {
                 self.0.push(Chunk::Chord(Chord::from_pair(pair)));
@@ -167,13 +152,12 @@ impl <'a> ProcessChild<'a> for Line{
     }
 }
 
-impl HasRule for Paragraph{
+impl HasRule for Paragraph {
     const MATCH_RULE: Rule = Rule::paragraph;
 }
 
-impl <'a> ProcessChild<'a> for Paragraph{
-
-    fn process_child(&mut self, pair: Pair<'a, Rule>){
+impl<'a> ProcessChild<'a> for Paragraph {
+    fn process_child(&mut self, pair: Pair<'a, Rule>) {
         if let Rule::line = pair.as_rule() {
             self.0.push(Line::from_pair(pair));
         }
@@ -184,66 +168,58 @@ impl HasRule for Section {
     const MATCH_RULE: Rule = Rule::section;
 }
 
-impl <'a> FromPair<'a> for Section {
-    fn from_pair(content: Pair<'a, Rule>) -> Self{
+impl<'a> FromPair<'a> for Section {
+    fn from_pair(content: Pair<'a, Rule>) -> Self {
         let pair = content.into_inner().peek().unwrap();
         let rule = pair.as_rule();
 
         match rule {
-            Rule::paragraph => {
-                Section::Verse(Paragraph::from_pair(pair))
-            },
+            Rule::paragraph => Section::Verse(Paragraph::from_pair(pair)),
             Rule::chorus => {
                 Section::Chorus(Paragraph::from_pair(pair.into_inner().peek().unwrap()))
-            },
-            Rule::comment => {
-                Section::Comment(Line::from_pair(pair.into_inner().peek().unwrap()))
-            },
-            _ => {
-                Section::Comment(Line::default())
-             }
+            }
+            Rule::comment => Section::Comment(Line::from_pair(pair.into_inner().peek().unwrap())),
+            _ => Section::Comment(Line::default()),
         }
     }
 }
 
 impl Song {
-    fn parse_meta<'a, 'b>(&'b mut self, pairs: Pairs<'a, Rule>){
+    fn parse_meta<'a, 'b>(&'b mut self, pairs: Pairs<'a, Rule>) {
         let pair = pairs.peek().unwrap();
         match pair.as_rule() {
             Rule::title => {
                 self.title = pair.into_inner().peek().unwrap().as_str().to_owned();
-            },
+            }
             Rule::artist => {
                 self.artist = pair.into_inner().peek().unwrap().as_str().to_owned();
-            },
+            }
             Rule::capo => {
                 let capo_str = pair.into_inner().peek().unwrap().as_str();
-                if let Ok(capo) = u8::from_str(capo_str){
+                if let Ok(capo) = u8::from_str(capo_str) {
                     self.capo = capo;
                 } else {
                     self.capo = 100;
                 }
-            },
+            }
             _ => {}
         }
     }
 }
 
-impl HasRule for Song{
+impl HasRule for Song {
     const MATCH_RULE: Rule = Rule::chordpro;
 }
 
-impl <'a> ProcessChild<'a> for Song{
-    fn process_child(&mut self, pair: Pair<'a, Rule>){
+impl<'a> ProcessChild<'a> for Song {
+    fn process_child(&mut self, pair: Pair<'a, Rule>) {
         match pair.as_rule() {
             Rule::meta => {
                 self.parse_meta(pair.into_inner());
-            },
-            
+            }
             Rule::section => {
                 self.song.push(Section::from_pair(pair));
             }
-            
             _ => {}
         }
     }
@@ -252,6 +228,7 @@ impl <'a> ProcessChild<'a> for Song{
 #[cfg(test)]
 mod tests {
     use super::*;
+
     macro_rules! chord {
         ($s:expr) => {
             Chord::from_str($s).expect("Failed to create chord")
@@ -266,10 +243,11 @@ mod tests {
             assert_eq!(parsed, $result);
         }};
     }
-
+    
     impl SongParser {
         fn parse_str<'a, T>(s: &'a str) -> Result<T, pest::error::Error<Rule>>
-            where T: HasRule + FromPair<'a>
+        where
+            T: HasRule + FromPair<'a>,
         {
             let content = SongParser::parse(T::MATCH_RULE, s)?;
 
@@ -277,12 +255,11 @@ mod tests {
             Ok(T::from_pair(pair))
         }
     }
-    
     #[test]
-    fn test_line_parse(){
+    fn test_line_parse() {
         parse_test!(Line {
             "[C]How I wish, how I wish you were [D]here"
-            => 
+            =>
             Line(vec![
                 Chunk::Chord(chord!("C")),
                 Chunk::Lyrics("How I wish, how I wish you were ".to_string()),
@@ -291,7 +268,6 @@ mod tests {
             ])
         })
     }
-
 
     #[test]
     fn test_paragraph_parse() {
@@ -374,12 +350,11 @@ mod tests {
                     ])
                 ]))]
             }
-            
         })
     }
 
     #[test]
-    fn test_chord(){
+    fn test_chord() {
         parse_test!( Chord {
             "C#dim4/G"
             => Chord{
@@ -389,8 +364,6 @@ mod tests {
                 number: 4,
                 others: "dim".to_string()
             }
-            
         })
     }
-
 }

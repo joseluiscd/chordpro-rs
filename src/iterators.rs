@@ -1,12 +1,7 @@
-use crate::song::{
-    Song,
-    Section,
-    Line,
-    Chunk,
-};
+use crate::song::{Chunk, Line, Section, Song};
+use std::iter::{once, Once};
 use std::slice::Iter;
 use std::slice::IterMut;
-use std::iter::{Once, once};
 
 impl Song {
     pub fn iter(&self) -> Iter<Section> {
@@ -20,12 +15,12 @@ impl Song {
 
 pub enum SectionIterator<'a> {
     Paragraph(Iter<'a, Line>),
-    Line(Once<&'a Line>)
+    Line(Once<&'a Line>),
 }
 
 pub enum SectionMutIterator<'a> {
     Paragraph(IterMut<'a, Line>),
-    Line(Once<&'a mut Line>)
+    Line(Once<&'a mut Line>),
 }
 
 impl Section {
@@ -33,7 +28,7 @@ impl Section {
         match self {
             Section::Chorus(p) => SectionIterator::Paragraph(p.0.iter()),
             Section::Verse(p) => SectionIterator::Paragraph(p.0.iter()),
-            Section::Comment(l) => SectionIterator::Line(once(l))
+            Section::Comment(l) => SectionIterator::Line(once(l)),
         }
     }
 
@@ -41,27 +36,27 @@ impl Section {
         match self {
             Section::Chorus(p) => SectionMutIterator::Paragraph(p.0.iter_mut()),
             Section::Verse(p) => SectionMutIterator::Paragraph(p.0.iter_mut()),
-            Section::Comment(l) => SectionMutIterator::Line(once(l))
+            Section::Comment(l) => SectionMutIterator::Line(once(l)),
         }
     }
 }
 
-impl <'a> Iterator for SectionIterator<'a> {
+impl<'a> Iterator for SectionIterator<'a> {
     type Item = &'a Line;
     fn next(&mut self) -> Option<Self::Item> {
         match self {
             SectionIterator::Paragraph(p) => p.next(),
-            SectionIterator::Line(l) => l.next()
+            SectionIterator::Line(l) => l.next(),
         }
     }
 }
 
-impl <'a> Iterator for SectionMutIterator<'a> {
+impl<'a> Iterator for SectionMutIterator<'a> {
     type Item = &'a mut Line;
     fn next(&mut self) -> Option<Self::Item> {
         match self {
             SectionMutIterator::Paragraph(p) => p.next(),
-            SectionMutIterator::Line(l) => l.next()
+            SectionMutIterator::Line(l) => l.next(),
         }
     }
 }
