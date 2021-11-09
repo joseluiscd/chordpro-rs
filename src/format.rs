@@ -52,6 +52,10 @@ impl std::fmt::Display for Chord {
             write!(f, "{}", self.number)?;
         }
 
+        if self.bass != self.root {
+            write!(f, "/{}", self.bass)?;
+        }
+
         Ok(())
     }
 }
