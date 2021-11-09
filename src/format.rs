@@ -96,6 +96,10 @@ impl<'a> Display for Latin<'a> {
             write!(f, "{}", self.0.others)?;
         }
 
+        if self.0.bass != self.0.root {
+            write!(f, "/{}", latin(&self.0.bass))?;
+        }
+
         Ok(())
     }
 }
@@ -127,6 +131,18 @@ mod test {
     }
 
     #[test]
+    fn standard_chord_with_bass() {
+        let make_chord_bass = |mut c: Chord, b: Note| {
+            c.bass = b;
+            c
+        };
+
+        assert_eq!(make_chord_bass(Chord::major(Note::C), Note::G).to_string(), "C/G");
+        assert_eq!(make_chord_bass(Chord::major(Note::CSharp), Note::GSharp).to_string(), "C#/G#");
+        assert_eq!(make_chord_bass(Chord::minor(Note::E), Note::G).to_string(), "Em/G");
+    }
+
+    #[test]
     fn latin_note() {
         assert_eq!(latin(&Note::B).to_string(), "Si");
         assert_eq!(latin(&Note::ASharp).to_string(), "Sib");
@@ -139,5 +155,17 @@ mod test {
         assert_eq!(Latin(&Chord::minor(Note::A)).to_string(), "Lam");
         assert_eq!(Latin(&Chord::major(Note::ASharp)).to_string(), "Sib");
         assert_eq!(Latin(&Chord::minor(Note::GSharp)).to_string(), "Sol#m");
+    }
+
+    #[test]
+    fn latin_chord_bass() {
+        let make_chord_bass = |mut c: Chord, b: Note| {
+            c.bass = b;
+            c
+        };
+        
+        assert_eq!(Latin(&make_chord_bass(Chord::major(Note::C), Note::G)).to_string(), "Do/Sol");
+        assert_eq!(Latin(&make_chord_bass(Chord::major(Note::CSharp), Note::GSharp)).to_string(), "Do#/Sol#");
+        assert_eq!(Latin(&make_chord_bass(Chord::minor(Note::E), Note::G)).to_string(), "Mim/Sol");
     }
 }

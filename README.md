@@ -69,5 +69,8 @@ let song = Song::from_str(r##"
 - [ ] Custom extensions (prefixed by `x_`)
 
 ## Supported chords
-At the moment, only A-G notation is supported. Flats (with `b`),
+At the moment, only A-G notation is supported for parsing. Flats (with `b`),
 sharps (with `#`) and common postfixes (`m`, `min`, `maj`, numbers).
+
+Wrapping a reference to the chord in a `chordpro::Latin` formats that chord with
+latin notation (`Do`, `Re` , `Mi`).
