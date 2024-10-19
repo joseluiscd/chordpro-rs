@@ -1,9 +1,9 @@
 [package]
 name = "chordpro"
-version = "0.3.1"
+version = "0.4.0-rc"
 authors = ["José Luis C.D. <jlcd0003@red.ujaen.es>"]
 license = "MIT/Apache-2.0"
-edition = "2018"
+edition = "2021"
 repository = "https://github.com/joseluiscd/chordpro-rs"
 readme = "README.md"
 description = "A Chordpro parser for Rust"
@@ -13,11 +13,11 @@ categories = ["parser-implementations"]
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-pest = "^2.1"
-pest_derive = "^2.1"
+pest = "^2.7"
+pest_derive = "^2.7"
 serde = { version = "^1.0", features = ["derive"] }
 num-traits = "^0.2"
-num-derive = "^0.3"
+num-derive = "^0.4"
 
 [features]
 default = []
