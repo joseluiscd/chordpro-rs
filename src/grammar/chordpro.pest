@@ -35,13 +35,11 @@ directive_args_chords = _{ ":" ~ args_chords }
 start_chorus = _{ start_directive ~ ("start_of_chorus"|"soc") ~ directive_args? ~ end_directive ~ NEWLINE? }
 end_chorus = _{ start_directive ~ ("end_of_chorus"|"eoc") ~ end_directive ~ NEWLINE? }
 
-title = { start_directive ~ ("title"|"t") ~ directive_args ~ end_directive ~ NEWLINE? }
-artist = { start_directive ~ "artist" ~ directive_args ~ end_directive ~ NEWLINE? }
-capo = { start_directive ~ "capo" ~ directive_args ~ end_directive ~ NEWLINE? }
+directive_name = {(!(end_directive | ":") ~ ANY)* }
+directive = { start_directive ~ directive_name ~ directive_args_chords? ~ end_directive ~ NEWLINE? }
+
 
 comment = { start_directive ~ ("comment"|"c") ~ directive_args_chords ~ end_directive ~ NEWLINE? }
-
-meta = { title | artist | capo }
 
 // Lyrics
 text = ${ (!(start_chord | end_chord | start_directive | end_directive | NEWLINE) ~ ANY)+ }
@@ -51,4 +49,4 @@ text = ${ (!(start_chord | end_chord | start_directive | end_directive | NEWLINE
 chorus = {start_chorus ~ (paragraph | NEWLINE)* ~ end_chorus }
 
 section = { chorus | comment | paragraph }
-chordpro = { SOI ~ (meta | section | NEWLINE)* ~ EOI }
+chordpro = { SOI ~ (section | directive | NEWLINE)* ~ EOI }

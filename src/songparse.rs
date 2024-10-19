@@ -185,24 +185,31 @@ impl<'a> FromPair<'a> for Section {
 }
 
 impl Song {
-    fn parse_meta<'a, 'b>(&'b mut self, pairs: Pairs<'a, Rule>) {
-        let pair = pairs.peek().unwrap();
-        match pair.as_rule() {
-            Rule::title => {
-                self.title = pair.into_inner().peek().unwrap().as_str().to_owned();
-            }
-            Rule::artist => {
-                self.artist = pair.into_inner().peek().unwrap().as_str().to_owned();
-            }
-            Rule::capo => {
-                let capo_str = pair.into_inner().peek().unwrap().as_str();
-                if let Ok(capo) = u8::from_str(capo_str) {
-                    self.capo = capo;
-                } else {
-                    self.capo = 100;
+    fn parse_directive<'a, 'b>(&'b mut self, mut pairs: Pairs<'a, Rule>) {
+        let name = pairs.next();
+        let data = pairs.next();
+
+        if let Some(name) = name {
+            if name.as_rule() == Rule::directive_name {
+                match name.as_str() {
+                    "title" => {
+                        self.title = data.map(|x| x.as_str()).unwrap_or("").to_owned();
+                    },
+                    "artist" => {
+                        self.artist = data.map(|x| x.as_str()).unwrap_or("").to_owned();
+                    },
+                    "capo" => {
+                        let capo_str = data.map(|x| x.as_str()).unwrap_or("");
+
+                        if let Ok(capo) = u8::from_str(capo_str) {
+                            self.capo = capo;
+                        } else {
+                            self.capo = 0;
+                        }
+                    }
+                    _ => {}
                 }
             }
-            _ => {}
         }
     }
 }
@@ -214,8 +221,8 @@ impl HasRule for Song {
 impl<'a> ProcessChild<'a> for Song {
     fn process_child(&mut self, pair: Pair<'a, Rule>) {
         match pair.as_rule() {
-            Rule::meta => {
-                self.parse_meta(pair.into_inner());
+            Rule::directive => {
+                self.parse_directive(pair.into_inner());
             }
             Rule::section => {
                 self.song.push(Section::from_pair(pair));
@@ -320,10 +327,23 @@ mod tests {
     }
 
     #[test]
+    fn test_comment_parse() {
+        parse_test!( Section {
+            r#"{comment: This is a comment [Am]}"#
+            =>
+            Section::Comment(
+                Line(vec![
+                    Chunk::Lyrics("This is a comment ".to_string()),
+                    Chunk::Chord(chord!("Am")),
+                ]),
+            )
+        })
+    }
+
+    #[test]
     fn test_song_parse() {
         parse_test!( Song {
-            r#"
-            {title: Wish You Were Here}
+            r#"{title: Wish You Were Here}
             {artist: Pink Floyd}
 
             {soc}
@@ -335,6 +355,36 @@ mod tests {
                 artist: "Pink Floyd".to_string(),
                 capo: 0,
                 song: vec![Section::Chorus(Paragraph(vec![
+                    Line(vec![
+                        Chunk::Chord(chord!("C")),
+                        Chunk::Lyrics("How I wish, how I wish you were ".to_string()),
+                        Chunk::Chord(chord!("D")),
+                        Chunk::Lyrics("here".to_string())
+                    ]),
+                    Line(vec![
+                        Chunk::Lyrics("We're just ".to_string()),
+                        Chunk::Chord(chord!("Am")),
+                        Chunk::Lyrics("two lost souls swimming in a fish bowl,".to_string()),
+                        Chunk::Chord(chord!("G")),
+                        Chunk::Lyrics(" year after year".to_string())
+                    ])
+                ]))]
+            }
+        })
+    }
+
+    #[test]
+    fn test_unknown_directive() {
+        parse_test!( Song {
+            r#"{directive not known}
+            {other: directive not known}
+            [C]How I wish, how I wish you were [D]here
+            We're just [Am]two lost souls swimming in a fish bowl,[G] year after year"#
+            => Song{
+                title: "".to_string(),
+                artist: "".to_string(),
+                capo: 0,
+                song: vec![Section::Verse(Paragraph(vec![
                     Line(vec![
                         Chunk::Chord(chord!("C")),
                         Chunk::Lyrics("How I wish, how I wish you were ".to_string()),
