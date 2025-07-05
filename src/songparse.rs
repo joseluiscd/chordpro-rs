@@ -189,17 +189,28 @@ impl Song {
         let name = pairs.next();
         let data = pairs.next();
 
+        let to_str = |pair : Option<Pair<'a, Rule>>| -> &'a str {
+            pair.map(|x| x.as_str()).unwrap_or("")
+        };
+
+        let to_string = |pair : Option<Pair<'a, Rule>>| {
+            to_str(pair).to_owned()
+        };
+
         if let Some(name) = name {
             if name.as_rule() == Rule::directive_name {
                 match name.as_str() {
-                    "title" => {
-                        self.title = data.map(|x| x.as_str()).unwrap_or("").to_owned();
+                    "title" | "t" => {
+                        self.title = to_string(data);
+                    },
+                    "subtitle" | "st" => {
+                        self.subtitle = to_string(data);
                     },
                     "artist" => {
-                        self.artist = data.map(|x| x.as_str()).unwrap_or("").to_owned();
+                        self.artist = to_string(data);
                     },
                     "capo" => {
-                        let capo_str = data.map(|x| x.as_str()).unwrap_or("");
+                        let capo_str = to_str(data);
 
                         if let Ok(capo) = u8::from_str(capo_str) {
                             self.capo = capo;
@@ -344,6 +355,7 @@ mod tests {
     fn test_song_parse() {
         parse_test!( Song {
             r#"{title: Wish You Were Here}
+            {st: Some version}
             {artist: Pink Floyd}
 
             {soc}
@@ -352,6 +364,7 @@ mod tests {
             {eoc}"#
             => Song{
                 title: "Wish You Were Here".to_string(),
+                subtitle: "Some version".to_string(),
                 artist: "Pink Floyd".to_string(),
                 capo: 0,
                 song: vec![Section::Chorus(Paragraph(vec![
@@ -382,6 +395,7 @@ mod tests {
             We're just [Am]two lost souls swimming in a fish bowl,[G] year after year"#
             => Song{
                 title: "".to_string(),
+                subtitle: "".to_string(),
                 artist: "".to_string(),
                 capo: 0,
                 song: vec![Section::Verse(Paragraph(vec![

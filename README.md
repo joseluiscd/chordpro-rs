@@ -38,7 +38,7 @@ let song = Song::from_str(r##"
 
 - Metadata:
     + [X] title (short: t)
-    + [ ] subtitle (short: st)
+    + [X] subtitle (short: st)
     + [X] artist
     + [ ] composer
     + [ ] lyricist

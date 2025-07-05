@@ -1,7 +1,7 @@
 use num_traits::{FromPrimitive, ToPrimitive};
-use serde::Serialize;
+use serde::{Serialize, Deserialize};
 
-#[derive(Copy, Serialize, Debug, PartialEq, Clone, FromPrimitive, ToPrimitive)]
+#[derive(Copy, Serialize, Deserialize, Debug, PartialEq, Clone, FromPrimitive, ToPrimitive)]
 pub enum Note {
     A,
     ASharp,
@@ -17,7 +17,7 @@ pub enum Note {
     GSharp,
 }
 
-#[derive(Serialize, Debug, Default, PartialEq, Clone)]
+#[derive(Serialize, Deserialize, Debug, Default, PartialEq, Clone)]
 pub struct Chord {
     pub root: Note,
     pub minor: bool,
